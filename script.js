@@ -5,10 +5,22 @@ const startGameButton = document.getElementById('start-game');
 const colors = ['#FFB6C1', '#ADD8E6', '#90EE90', '#FFD700', '#FF69B4', '#FFA07A', '#20B2AA', '#9370DB', '#F08080', '#778899'];
 let numRows, numCols, grid, zones;
 
+const levels = [
+    { gridSize: 4, numQueens: 4 },
+    { gridSize: 5, numQueens: 5 },
+    { gridSize: 6, numQueens: 6 },
+    { gridSize: 7, numQueens: 7 },
+    { gridSize: 8, numQueens: 8 },
+    { gridSize: 9, numQueens: 9 },
+    { gridSize: 10, numQueens: 10 }
+];
+
+let currentLevel = 0;
+
 startGameButton.addEventListener('click', startGame);
 
 function startGame() {
-    numRows = parseInt(gridSizeSelect.value);
+    numRows = levels[currentLevel].gridSize;
     numCols = numRows;
     grid = Array.from({ length: numRows }, () => Array(numCols).fill(null));
     zones = generateZones(numRows, numCols);
@@ -19,21 +31,19 @@ function generateZones(rows, cols) {
     const zones = Array.from({ length: rows }, () => Array(cols).fill(null));
     let zoneIndex = 0;
 
-    // Placer des formes arbitraires de zones
     const zoneShapes = [
-        { shape: [[1, 1, 1], [1, 0, 0], [1, 0, 0]], color: colors[0] },
-        { shape: [[0, 1, 0], [1, 1, 1], [0, 1, 0]], color: colors[1] },
-        { shape: [[1, 1, 0], [0, 1, 1]], color: colors[2] },
-        { shape: [[1, 1, 1], [1, 0, 1]], color: colors[3] },
+        { shape: [[1]], color: colors[0] },
+        { shape: [[1, 1]], color: colors[1] },
+        { shape: [[1, 1, 1]], color: colors[2] },
+        { shape: [[1, 0], [1, 1]], color: colors[3] },
         { shape: [[1, 0, 0], [1, 1, 1]], color: colors[4] },
-        { shape: [[0, 1, 0], [1, 1, 1]], color: colors[5] },
+        { shape: [[1, 0, 0, 0], [1, 1, 1, 1]], color: colors[5] },
         { shape: [[1, 1], [1, 1]], color: colors[6] },
-        { shape: [[0, 1, 1], [1, 1, 0]], color: colors[7] },
-        { shape: [[1, 0, 0], [1, 1, 1]], color: colors[8] },
+        { shape: [[1, 1, 0], [0, 1, 1]], color: colors[7] },
+        { shape: [[1, 1, 1]], color: colors[8] },
         { shape: [[1, 1, 1], [0, 1, 0]], color: colors[9] }
     ];
 
-    // Assigner des formes aux cellules de manière à couvrir toute la grille
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
             zones[row][col] = zoneIndex;
@@ -125,54 +135,9 @@ function isValidPlacement(row, col) {
     return true;
 }
 
-function
-    // Suite du script JavaScript
-
-const levels = [
-    { gridSize: 4, numQueens: 4 },
-    { gridSize: 5, numQueens: 5 },
-    { gridSize: 6, numQueens: 6 },
-    { gridSize: 7, numQueens: 7 },
-    { gridSize: 8, numQueens: 8 },
-    { gridSize: 9, numQueens: 9 },
-    { gridSize: 10, numQueens: 10 }
-];
-
-let currentLevel = 0;
-
-function startGame() {
-    numRows = levels[currentLevel].gridSize;
-    numCols = numRows;
-    grid = Array.from({ length: numRows }, () => Array(numCols).fill(null));
-    zones = generateZones(numRows, numCols);
-    initializeGrid();
-}
-
-function generateZones(rows, cols) {
-    const zones = Array.from({ length: rows }, () => Array(cols).fill(null));
-    let zoneIndex = 0;
-
-    const zoneShapes = [
-        { shape: [[1]], color: colors[0] },
-        { shape: [[1, 1]], color: colors[1] },
-        { shape: [[1, 1, 1]], color: colors[2] },
-        { shape: [[1, 0], [1, 1]], color: colors[3] },
-        { shape: [[1, 0, 0], [1, 1, 1]], color: colors[4] },
-        { shape: [[1, 0, 0, 0], [1, 1, 1, 1]], color: colors[5] },
-        { shape: [[1, 1], [1, 1]], color: colors[6] },
-        { shape: [[1, 1, 0], [0, 1, 1]], color: colors[7] },
-        { shape: [[1, 1, 1]], color: colors[8] },
-        { shape: [[1, 1, 1], [0, 1, 0]], color: colors[9] }
-    ];
-
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            zones[row][col] = zoneIndex;
-            zoneIndex = (zoneIndex + 1) % zoneShapes.length;
-        }
-    }
-
-    return zones;
+function checkVictory() {
+    // Logique pour vérifier si le joueur a gagné
+    // À implémenter selon vos critères de victoire
 }
 
 // Fonction pour passer au niveau suivant
