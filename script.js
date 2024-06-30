@@ -1,53 +1,66 @@
 const gridContainer = document.getElementById('grid-container');
-const numRows = 10;
-const numCols = 10;
+const gridSizeSelect = document.getElementById('grid-size');
+const startGameButton = document.getElementById('start-game');
+
 const colors = ['#FFB6C1', '#ADD8E6', '#90EE90', '#FFD700', '#FF69B4', '#FFA07A', '#20B2AA', '#9370DB', '#F08080', '#778899'];
+let numRows, numCols, grid, zones;
 
-// Initialisation des zones de couleur
-const zones = Array.from({ length: numRows }, () => Array(numCols).fill(null));
-const zoneShapes = [
-    { shape: [[1, 1, 1], [1, 0, 0], [1, 0, 0]], color: colors[0] },
-    { shape: [[0, 1, 0], [1, 1, 1], [0, 1, 0]], color: colors[1] },
-    { shape: [[1, 1, 0], [0, 1, 1]], color: colors[2] },
-    { shape: [[1, 1, 1], [1, 0, 1]], color: colors[3] },
-    { shape: [[1, 0, 0], [1, 1, 1]], color: colors[4] },
-    { shape: [[0, 1, 0], [1, 1, 1]], color: colors[5] },
-    { shape: [[1, 1], [1, 1]], color: colors[6] },
-    { shape: [[0, 1, 1], [1, 1, 0]], color: colors[7] },
-    { shape: [[1, 0, 0], [1, 1, 1]], color: colors[8] },
-    { shape: [[1, 1, 1], [0, 1, 0]], color: colors[9] }
-];
+startGameButton.addEventListener('click', startGame);
 
-function placeZones() {
-    let startRow = 0;
-    let startCol = 0;
+function startGame() {
+    numRows = parseInt(gridSizeSelect.value);
+    numCols = numRows;
+    grid = Array.from({ length: numRows }, () => Array(numCols).fill(null));
+    zones = generateZones(numRows, numCols);
+    initializeGrid();
+}
+
+function generateZones(rows, cols) {
+    const zones = Array.from({ length: rows }, () => Array(cols).fill(null));
     let zoneIndex = 0;
 
-    for (let i = 0; i < numRows; i++) {
-        for (let j = 0; j < numCols; j++) {
-            zones[i][j] = zoneIndex;
+    // Placer des formes arbitraires de zones
+    const zoneShapes = [
+        { shape: [[1, 1, 1], [1, 0, 0], [1, 0, 0]], color: colors[0] },
+        { shape: [[0, 1, 0], [1, 1, 1], [0, 1, 0]], color: colors[1] },
+        { shape: [[1, 1, 0], [0, 1, 1]], color: colors[2] },
+        { shape: [[1, 1, 1], [1, 0, 1]], color: colors[3] },
+        { shape: [[1, 0, 0], [1, 1, 1]], color: colors[4] },
+        { shape: [[0, 1, 0], [1, 1, 1]], color: colors[5] },
+        { shape: [[1, 1], [1, 1]], color: colors[6] },
+        { shape: [[0, 1, 1], [1, 1, 0]], color: colors[7] },
+        { shape: [[1, 0, 0], [1, 1, 1]], color: colors[8] },
+        { shape: [[1, 1, 1], [0, 1, 0]], color: colors[9] }
+    ];
+
+    // Assigner des formes aux cellules de manière à couvrir toute la grille
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            zones[row][col] = zoneIndex;
             zoneIndex = (zoneIndex + 1) % zoneShapes.length;
         }
     }
-    console.log('Zones placed:', zones);
+
+    return zones;
 }
 
-// Initialisation de la grille
 function initializeGrid() {
-    placeZones();
-    for (let i = 0; i < numRows; i++) {
-        for (let j = 0; j < numCols; j++) {
+    gridContainer.innerHTML = '';
+    gridContainer.style.gridTemplateRows = `repeat(${numRows}, 1fr)`;
+    gridContainer.style.gridTemplateColumns = `repeat(${numCols}, 1fr)`;
+
+    for (let row = 0; row < numRows; row++) {
+        for (let col = 0; col < numCols; col++) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
-            cell.dataset.row = i;
-            cell.dataset.col = j;
+            cell.dataset.row = row;
+            cell.dataset.col = col;
             cell.dataset.status = 'empty';
-            cell.style.backgroundColor = zones[i][j] !== null ? zoneShapes[zones[i][j]].color : 'white';
+            cell.style.backgroundColor = zones[row][col] !== null ? colors[zones[row][col]] : 'white';
             cell.addEventListener('click', handleCellClick);
             gridContainer.appendChild(cell);
         }
     }
-    console.log('Grid initialized');
 }
 
 function handleCellClick(event) {
@@ -57,14 +70,10 @@ function handleCellClick(event) {
     const col = parseInt(cell.dataset.col);
 
     if (status === 'empty' && isValidPlacement(row, col)) {
-        cell.dataset.status = 'x';
-        cell.classList.add('x');
-        cell.innerText = 'X';
-    } else if (status === 'x') {
         cell.dataset.status = 'queen';
-        cell.classList.remove('x');
         cell.classList.add('queen');
         cell.innerText = '👸';
+        placeAutomaticCrosses(row, col);
     } else if (status === 'queen') {
         cell.dataset.status = 'empty';
         cell.classList.remove('queen');
@@ -74,11 +83,35 @@ function handleCellClick(event) {
     checkVictory();
 }
 
+function placeAutomaticCrosses(row, col) {
+    const directions = [
+        [0, 1], [1, 0], [0, -1], [-1, 0],
+        [1, 1], [1, -1], [-1, 1], [-1, -1]
+    ];
+
+    directions.forEach(([dx, dy]) => {
+        let newRow = row + dx;
+        let newCol = col + dy;
+
+        while (newRow >= 0 && newRow < numRows && newCol >= 0 && newCol < numCols) {
+            const adjacentCell = gridContainer.querySelector(`[data-row='${newRow}'][data-col='${newCol}']`);
+            if (adjacentCell && adjacentCell.dataset.status === 'empty') {
+                adjacentCell.dataset.status = 'x';
+                adjacentCell.classList.add('x');
+                adjacentCell.innerText = 'X';
+            }
+            newRow += dx;
+            newCol += dy;
+        }
+    });
+}
+
 function isValidPlacement(row, col) {
     const directions = [
         [0, 1], [1, 0], [0, -1], [-1, 0],
         [1, 1], [1, -1], [-1, 1], [-1, -1]
     ];
+
     for (const [dx, dy] of directions) {
         const newRow = row + dx;
         const newCol = col + dy;
@@ -92,39 +125,65 @@ function isValidPlacement(row, col) {
     return true;
 }
 
-// Vérification des conditions de victoire
-function checkVictory() {
-    const rows = Array(numRows).fill(0);
-    const cols = Array(numCols).fill(0);
-    const zoneCount = Array(zoneShapes.length).fill(0);
+function
+    // Suite du script JavaScript
 
-    const cells = document.querySelectorAll('.cell');
-    cells.forEach(cell => {
-        if (cell.dataset.status === 'queen') {
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.col);
-            rows[row]++;
-            cols[col]++;
-            const zone = zones[row][col];
-            if (zone !== null) {
-                zoneCount[zone]++;
-            }
-        }
-    });
+const levels = [
+    { gridSize: 4, numQueens: 4 },
+    { gridSize: 5, numQueens: 5 },
+    { gridSize: 6, numQueens: 6 },
+    { gridSize: 7, numQueens: 7 },
+    { gridSize: 8, numQueens: 8 },
+    { gridSize: 9, numQueens: 9 },
+    { gridSize: 10, numQueens: 10 }
+];
 
-    cells.forEach(cell => {
-        const row = parseInt(cell.dataset.row);
-        const col = parseInt(cell.dataset.col);
-        const zone = zones[row][col];
-        if (cell.dataset.status === 'queen' && (rows[row] > 1 || cols[col] > 1 || (zone !== null && zoneCount[zone] > 1))) {
-            cell.style.backgroundColor = 'red';
-            cell.style.textDecoration = 'line-through';
-        } else if (zone !== null) {
-            cell.style.backgroundColor = zoneShapes[zone].color;
-            cell.style.textDecoration = 'none';
-        }
-    });
-    console.log('Victory check complete');
+let currentLevel = 0;
+
+function startGame() {
+    numRows = levels[currentLevel].gridSize;
+    numCols = numRows;
+    grid = Array.from({ length: numRows }, () => Array(numCols).fill(null));
+    zones = generateZones(numRows, numCols);
+    initializeGrid();
 }
 
-initializeGrid();
+function generateZones(rows, cols) {
+    const zones = Array.from({ length: rows }, () => Array(cols).fill(null));
+    let zoneIndex = 0;
+
+    const zoneShapes = [
+        { shape: [[1]], color: colors[0] },
+        { shape: [[1, 1]], color: colors[1] },
+        { shape: [[1, 1, 1]], color: colors[2] },
+        { shape: [[1, 0], [1, 1]], color: colors[3] },
+        { shape: [[1, 0, 0], [1, 1, 1]], color: colors[4] },
+        { shape: [[1, 0, 0, 0], [1, 1, 1, 1]], color: colors[5] },
+        { shape: [[1, 1], [1, 1]], color: colors[6] },
+        { shape: [[1, 1, 0], [0, 1, 1]], color: colors[7] },
+        { shape: [[1, 1, 1]], color: colors[8] },
+        { shape: [[1, 1, 1], [0, 1, 0]], color: colors[9] }
+    ];
+
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            zones[row][col] = zoneIndex;
+            zoneIndex = (zoneIndex + 1) % zoneShapes.length;
+        }
+    }
+
+    return zones;
+}
+
+// Fonction pour passer au niveau suivant
+function nextLevel() {
+    if (currentLevel < levels.length - 1) {
+        currentLevel++;
+        startGame();
+    } else {
+        alert('Félicitations, vous avez complété tous les niveaux !');
+    }
+}
+
+// Initialisation de la grille au chargement de la page
+startGame();
