@@ -32,3 +32,30 @@ body {
 .cell.x {
     background-color: #f08080;
 }
+/* Suite du CSS */
+
+.cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(100% / var(--grid-size));
+    height: calc(100% / var(--grid-size));
+    font-size: 24px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+#grid-container {
+    display: grid;
+    gap: 1px;
+    width: 80%; /* Ajuster la largeur de la grille en fonction de vos besoins */
+    max-width: 800px; /* Ajuster la largeur maximale de la grille en fonction de vos besoins */
+    margin: 20px auto;
+}
+
+@media (max-width: 600px) {
+    .cell {
+        font-size: 16px;
+    }
+}
