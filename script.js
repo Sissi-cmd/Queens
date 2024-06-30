@@ -21,20 +21,15 @@ const zoneShapes = [
 function placeZones() {
     let startRow = 0;
     let startCol = 0;
-    zoneShapes.forEach((zone, index) => {
-        for (let i = 0; i < zone.shape.length; i++) {
-            for (let j = 0; j < zone.shape[i].length; j++) {
-                if (zone.shape[i][j] === 1) {
-                    zones[startRow + i][startCol + j] = index;
-                }
-            }
+    let zoneIndex = 0;
+
+    for (let i = 0; i < numRows; i++) {
+        for (let j = 0; j < numCols; j++) {
+            zones[i][j] = zoneIndex;
+            zoneIndex = (zoneIndex + 1) % zoneShapes.length;
         }
-        startCol += 3;
-        if (startCol >= numCols) {
-            startCol = 0;
-            startRow += 3;
-        }
-    });
+    }
+    console.log('Zones placed:', zones);
 }
 
 // Initialisation de la grille
@@ -52,6 +47,7 @@ function initializeGrid() {
             gridContainer.appendChild(cell);
         }
     }
+    console.log('Grid initialized');
 }
 
 function handleCellClick(event) {
@@ -61,7 +57,12 @@ function handleCellClick(event) {
     const col = parseInt(cell.dataset.col);
 
     if (status === 'empty' && isValidPlacement(row, col)) {
+        cell.dataset.status = 'x';
+        cell.classList.add('x');
+        cell.innerText = 'X';
+    } else if (status === 'x') {
         cell.dataset.status = 'queen';
+        cell.classList.remove('x');
         cell.classList.add('queen');
         cell.innerText = '👸';
     } else if (status === 'queen') {
@@ -123,6 +124,7 @@ function checkVictory() {
             cell.style.textDecoration = 'none';
         }
     });
+    console.log('Victory check complete');
 }
 
 initializeGrid();
