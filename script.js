@@ -18,12 +18,20 @@ const levels = [
 let currentLevel = 0;
 
 startGameButton.addEventListener('click', startGame);
+gridSizeSelect.addEventListener('change', updateGridSize); // Ajout de l'écouteur pour la sélection de taille
 
 function startGame() {
-    numRows = levels[currentLevel].gridSize;
+    numRows = parseInt(gridSizeSelect.value); // Met à jour numRows avec la valeur sélectionnée
     numCols = numRows;
     grid = Array.from({ length: numRows }, () => Array(numCols).fill(null));
     zones = generateZones(numRows, numCols);
+    initializeGrid();
+}
+
+function updateGridSize() {
+    // Cette fonction met à jour la taille de la grille sans réinitialiser le jeu
+    numRows = parseInt(gridSizeSelect.value);
+    numCols = numRows;
     initializeGrid();
 }
 
